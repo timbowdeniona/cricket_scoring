@@ -136,26 +136,26 @@ export function TeamManager({
       </form>
 
       {/* Players List */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-80 overflow-y-auto">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
         {currentTeam.players.map((player, idx) => (
           <div
             key={player.id}
-            className="flex items-center justify-between bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-900/30"
+            className="flex items-center justify-between bg-emerald-950/40 p-2 rounded-xl border border-emerald-900/30"
           >
-            <div className="flex items-center gap-2">
-              <span className="font-mono text-xs text-emerald-400 font-bold w-5">{idx + 1}.</span>
-              <div>
-                <div className="text-sm font-semibold text-white">{player.name}</div>
-                <div className="text-[11px] text-gray-400">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <span className="font-mono text-xs text-emerald-400 font-bold w-5 shrink-0">{idx + 1}.</span>
+              <div className="min-w-0">
+                <div className="text-xs font-semibold text-white truncate">{player.name}</div>
+                <div className="text-[10px] text-gray-400 truncate">
                   {player.battingHand} {player.bowlingStyle ? `• ${player.bowlingStyle}` : ''}
                 </div>
               </div>
             </div>
             <button
               onClick={() => handleRemovePlayer(player.id)}
-              className="p-1.5 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-950/50"
+              className="p-1 rounded-lg text-gray-500 hover:text-rose-400 hover:bg-rose-950/50 shrink-0 ml-1"
             >
-              <Trash2 className="w-4 h-4" />
+              <Trash2 className="w-3.5 h-3.5" />
             </button>
           </div>
         ))}
