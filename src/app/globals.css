@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #090f0c;
-  --foreground: #f0fdf4;
+  --background: #050b18;
+  --foreground: #f8f9fa;
 }
 
 body {
@@ -22,37 +22,52 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0e1813;
+  background: #0a1226;
 }
 ::-webkit-scrollbar-thumb {
-  background: #1e3a2b;
+  background: #1b4998;
   border-radius: 3px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #10b981;
+  background: #2563eb;
 }
 
-/* Glassmorphism utility classes */
+/* Malpas CC Glassmorphism & Tie Pattern utility classes */
 .glass-panel {
-  background: rgba(18, 30, 24, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(15, 27, 56, 0.75);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
   border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .glass-button {
-  background: rgba(30, 50, 40, 0.8);
+  background: rgba(27, 73, 152, 0.4);
   backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.12);
   transition: all 0.15s ease-in-out;
 }
 
-.glass-button:active {
-  transform: scale(0.96);
-  background: rgba(16, 185, 129, 0.3);
+.glass-button:hover {
+  background: rgba(37, 99, 235, 0.6);
+  border-color: rgba(255, 255, 255, 0.25);
 }
 
-/* Pulse animation for active bowler / striker */
+.glass-button:active {
+  transform: scale(0.97);
+  background: rgba(37, 99, 235, 0.8);
+}
+
+.tie-stripe-bg {
+  background-image: repeating-linear-gradient(
+    135deg,
+    rgba(248, 249, 250, 0.04),
+    rgba(248, 249, 250, 0.04) 12px,
+    transparent 12px,
+    transparent 32px
+  );
+}
+
+/* Active bowler / striker pulse */
 @keyframes activePulse {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: 0.7; transform: scale(1.05); }

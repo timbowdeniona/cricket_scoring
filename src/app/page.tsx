@@ -1,7 +1,16 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useMatchEngine } from '@/store/matchStore';
+import { MalpasTeamId, MalpasFixture, MalpasPlayerStats } from '@/types/malpas';
+import { MalpasScraperClient } from '@/services/malpasScraper';
+import { MALPAS_FIXTURES, MALPAS_PLAYER_STATS, MALPAS_PLAYERS_1ST_XI, MALPAS_PLAYERS_2ND_XI, MALPAS_PLAYERS_SUNDAY_XI } from '@/services/malpasData';
+
+import { MalpasHeroBanner } from '@/components/portal/MalpasHeroBanner';
+import { FixturesResultsView } from '@/components/portal/FixturesResultsView';
+import { PlayerStatsView } from '@/components/portal/PlayerStatsView';
+import { ClubHistoryView } from '@/components/portal/ClubHistoryView';
+
 import { LiveHeader } from '@/components/scoring/LiveHeader';
 import { QuickKeypad } from '@/components/scoring/QuickKeypad';
 import { BatterBowlerSelector } from '@/components/scoring/BatterBowlerSelector';
@@ -16,14 +25,15 @@ import { SettingsModal } from '@/components/settings/SettingsModal';
 import { MatchHistory } from '@/components/persistence/MatchHistory';
 
 import {
-  Target,
-  Box,
+  Activity,
+  Calendar,
+  BarChart3,
+  Trophy,
   Users,
+  Box,
   Database,
   Settings,
   Shield,
-  Activity,
-  Award,
 } from 'lucide-react';
 
 export default function Home() {
@@ -45,19 +55,31 @@ export default function Home() {
     importMatchJson,
   } = useMatchEngine();
 
-  const [activeTab, setActiveTab] = useState<'scoring' | 'analytics' | 'simulation' | 'teams' | 'persistence'>('scoring');
+  const [selectedTeamId, setSelectedTeamId] = useState<MalpasTeamId>('1st_xi');
+  const [activeTab, setActiveTab] = useState<'fixtures' | 'stats' | 'history' | 'scoring' | 'teams' | 'simulation'>('fixtures');
+
+  const [fixtures, setFixtures] = useState<MalpasFixture[]>(MALPAS_FIXTURES);
+  const [stats, setStats] = useState<MalpasPlayerStats[]>(MALPAS_PLAYER_STATS);
+
   const [showBowlerModal, setShowBowlerModal] = useState(false);
   const [showStrikerModal, setShowStrikerModal] = useState(false);
   const [showWicketModal, setShowWicketModal] = useState(false);
   const [showPlayCricketImporter, setShowPlayCricketImporter] = useState(false);
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
+  // Fetch fixtures & stats via Malpas scraper client
+  useEffect(() => {
+    const client = new MalpasScraperClient();
+    client.getFixtures(selectedTeamId).then(data => setFixtures(data));
+    client.getPlayerStats(selectedTeamId).then(data => setStats(data));
+  }, [selectedTeamId]);
+
   if (!match) {
     return (
-      <div className="min-h-screen bg-[#090f0c] text-white flex items-center justify-center">
+      <div className="min-h-screen bg-malpas-navy text-white flex items-center justify-center">
         <div className="text-center space-y-3">
-          <Activity className="w-10 h-10 text-emerald-400 animate-spin mx-auto" />
-          <p className="text-sm font-bold text-gray-400">Loading Village Cricket Scorer...</p>
+          <Activity className="w-10 h-10 text-amber-400 animate-spin mx-auto" />
+          <p className="text-sm font-bold text-gray-300">Loading Malpas CC Portal...</p>
         </div>
       </div>
     );
@@ -74,106 +96,101 @@ export default function Home() {
   );
 
   return (
-    <main className="min-h-screen bg-[#090f0c] text-foreground p-3 sm:p-6 max-w-6xl mx-auto space-y-5 pb-16">
-      {/* App Navigation Header */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 glass-panel rounded-2xl p-4 border border-emerald-900/40">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-400 to-emerald-700 flex items-center justify-center shadow-lg font-black text-black text-xl">
-            🏏
-          </div>
-          <div>
-            <h1 className="text-xl font-black tracking-tight text-white flex items-center gap-2">
-              Village Cricket Scorer
-              <span className="text-[10px] font-bold uppercase bg-emerald-500 text-black px-2 py-0.5 rounded-full">
-                Tablet Ready PWA
-              </span>
-            </h1>
-            <p className="text-xs text-emerald-400">Touch Field Scoring • Stroke Analytics • 3D Simulation</p>
-          </div>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setShowPlayCricketImporter(true)}
-            className="px-3 py-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-black text-xs font-bold flex items-center gap-1.5 shadow"
-          >
-            <Shield className="w-4 h-4" />
-            Play-Cricket Sync
-          </button>
-          <button
-            onClick={() => setShowSettingsModal(true)}
-            className="p-2 rounded-xl bg-emerald-950/80 hover:bg-emerald-900 text-emerald-300 border border-emerald-800/40"
-          >
-            <Settings className="w-5 h-5" />
-          </button>
-        </div>
-      </div>
+    <main className="min-h-screen bg-malpas-navy text-foreground p-3 sm:p-6 max-w-6xl mx-auto space-y-5 pb-16">
+      {/* Malpas CC Hero Header */}
+      <MalpasHeroBanner selectedTeamId={selectedTeamId} onSelectTeam={setSelectedTeamId} />
 
       {/* Main Tab Navigation Bar */}
-      <div className="flex items-center gap-1.5 overflow-x-auto bg-black/40 p-1.5 rounded-2xl border border-emerald-900/30">
+      <div className="flex items-center gap-1.5 overflow-x-auto bg-black/40 p-1.5 rounded-2xl border border-malpas-blue/30">
         <button
-          onClick={() => setActiveTab('scoring')}
-          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-            activeTab === 'scoring'
-              ? 'bg-emerald-500 text-black shadow-lg scale-[1.02]'
-              : 'text-gray-400 hover:text-white hover:bg-emerald-950/40'
+          onClick={() => setActiveTab('fixtures')}
+          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
+            activeTab === 'fixtures'
+              ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
+              : 'text-gray-300 hover:text-white hover:bg-malpas-blue/30'
           }`}
         >
-          <Activity className="w-4 h-4" />
+          <Calendar className="w-4 h-4 text-amber-400" />
+          Fixtures & Results
+        </button>
+
+        <button
+          onClick={() => setActiveTab('stats')}
+          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
+            activeTab === 'stats'
+              ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
+              : 'text-gray-300 hover:text-white hover:bg-malpas-blue/30'
+          }`}
+        >
+          <BarChart3 className="w-4 h-4 text-amber-400" />
+          Player Stats
+        </button>
+
+        <button
+          onClick={() => setActiveTab('history')}
+          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
+            activeTab === 'history'
+              ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
+              : 'text-gray-300 hover:text-white hover:bg-malpas-blue/30'
+          }`}
+        >
+          <Trophy className="w-4 h-4 text-amber-400" />
+          Club History
+        </button>
+
+        <button
+          onClick={() => setActiveTab('scoring')}
+          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
+            activeTab === 'scoring'
+              ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
+              : 'text-gray-300 hover:text-white hover:bg-malpas-blue/30'
+          }`}
+        >
+          <Activity className="w-4 h-4 text-emerald-400" />
           Live Scoring
         </button>
 
         <button
-          onClick={() => setActiveTab('analytics')}
-          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-            activeTab === 'analytics'
-              ? 'bg-emerald-500 text-black shadow-lg scale-[1.02]'
-              : 'text-gray-400 hover:text-white hover:bg-emerald-950/40'
-          }`}
-        >
-          <Target className="w-4 h-4" />
-          Batsman Stroke Location
-        </button>
-
-        <button
           onClick={() => setActiveTab('simulation')}
-          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
             activeTab === 'simulation'
-              ? 'bg-emerald-500 text-black shadow-lg scale-[1.02]'
-              : 'text-gray-400 hover:text-white hover:bg-emerald-950/40'
+              ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
+              : 'text-gray-300 hover:text-white hover:bg-malpas-blue/30'
           }`}
         >
-          <Box className="w-4 h-4" />
-          3D Innings Simulation
+          <Box className="w-4 h-4 text-blue-400" />
+          3D Innings
         </button>
 
         <button
           onClick={() => setActiveTab('teams')}
-          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
+          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
             activeTab === 'teams'
-              ? 'bg-emerald-500 text-black shadow-lg scale-[1.02]'
-              : 'text-gray-400 hover:text-white hover:bg-emerald-950/40'
+              ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
+              : 'text-gray-300 hover:text-white hover:bg-malpas-blue/30'
           }`}
         >
-          <Users className="w-4 h-4" />
-          Teams & Squads
-        </button>
-
-        <button
-          onClick={() => setActiveTab('persistence')}
-          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all ${
-            activeTab === 'persistence'
-              ? 'bg-emerald-500 text-black shadow-lg scale-[1.02]'
-              : 'text-gray-400 hover:text-white hover:bg-emerald-950/40'
-          }`}
-        >
-          <Database className="w-4 h-4" />
-          Offline Data
+          <Users className="w-4 h-4 text-purple-400" />
+          Squads
         </button>
       </div>
 
-      {/* Tab 1: Live Match Touch Scoring */}
+      {/* Tab 1: Fixtures & Scorecards */}
+      {activeTab === 'fixtures' && (
+        <FixturesResultsView fixtures={fixtures} selectedTeamId={selectedTeamId} />
+      )}
+
+      {/* Tab 2: Player Statistics */}
+      {activeTab === 'stats' && (
+        <PlayerStatsView stats={stats} selectedTeamId={selectedTeamId} />
+      )}
+
+      {/* Tab 3: Club History & Honors */}
+      {activeTab === 'history' && (
+        <ClubHistoryView />
+      )}
+
+      {/* Tab 4: Live Scoring */}
       {activeTab === 'scoring' && (
         <div className="space-y-4">
           <LiveHeader
@@ -189,20 +206,17 @@ export default function Home() {
             onOpenWicketModal={() => setShowWicketModal(true)}
             strikerStance={striker?.battingHand || 'RHB'}
           />
+
+          <BatsmanInningsView innings={inn} players={battingTeam.players} />
         </div>
       )}
 
-      {/* Tab 2: Batsman Innings Stroke Location Analysis */}
-      {activeTab === 'analytics' && (
-        <BatsmanInningsView innings={inn} players={battingTeam.players} />
-      )}
-
-      {/* Tab 3: 3D WebGL Trajectory Simulation */}
+      {/* Tab 5: 3D Innings Simulation */}
       {activeTab === 'simulation' && (
         <Innings3DCanvas innings={inn} players={battingTeam.players} />
       )}
 
-      {/* Tab 4: Teams & Squads Management */}
+      {/* Tab 6: Squad Manager */}
       {activeTab === 'teams' && (
         <TeamManager
           homeTeam={match.homeTeam}
@@ -211,18 +225,6 @@ export default function Home() {
             setMatch({ ...match, homeTeam: home, awayTeam: away });
           }}
           onOpenPlayCricketImporter={() => setShowPlayCricketImporter(true)}
-        />
-      )}
-
-      {/* Tab 5: Data Persistence & History */}
-      {activeTab === 'persistence' && (
-        <MatchHistory
-          currentMatch={match}
-          savedMatches={savedMatches}
-          onLoadSampleMatch={loadSampleMatch}
-          onExportJson={exportMatchJson}
-          onImportJson={importMatchJson}
-          onSaveToHistory={saveCurrentMatchToHistory}
         />
       )}
 

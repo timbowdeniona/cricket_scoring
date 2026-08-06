@@ -1,5 +1,5 @@
 export type BattingHand = 'RHB' | 'LHB';
-export type BowlingStyle = 'Right-arm Fast' | 'Right-arm Medium' | 'Right-arm Spin' | 'Left-arm Fast' | 'Left-arm Spin';
+export type BowlingStyle = 'Right-arm Fast' | 'Right-arm Medium' | 'Right-arm Spin' | 'Left-arm Fast' | 'Left-arm Medium' | 'Left-arm Spin';
 
 export interface Player {
   id: string;
