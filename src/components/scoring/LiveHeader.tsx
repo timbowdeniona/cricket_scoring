@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Match, Player } from '@/types/cricket';
+import { Match } from '@/types/cricket';
 import { formatOvers, calculateRunRate, computeBatsmanStats } from '@/utils/cricketCalculations';
-import { ArrowLeftRight, UserCheck, ShieldAlert } from 'lucide-react';
+import { ArrowLeftRight, UserCheck } from 'lucide-react';
+import { SocialShareButtons } from './SocialShareButtons';
 
 interface LiveHeaderProps {
   match: Match;
@@ -31,7 +32,6 @@ export function LiveHeader({
   const activeBowler = allPlayers.find(p => p.id === inn.activeBowlerId);
 
   // Calculate bowler stats in current innings
-  let bowlerOvers = 0;
   let bowlerBalls = 0;
   let bowlerRuns = 0;
   let bowlerWickets = 0;
@@ -54,121 +54,120 @@ export function LiveHeader({
   const recentBalls = currentOver ? currentOver.balls.slice(-6) : [];
 
   return (
-    <header className="w-full glass-panel rounded-2xl p-4 shadow-xl border border-emerald-900/40">
-      {/* Top Banner: Match Title & Score */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 border-b border-emerald-800/30 pb-3">
+    <header className="w-full glass-panel rounded-2xl p-4 shadow-xl border border-malpas-blue/40 space-y-3">
+      {/* Top Banner: Match Title, Score & 1-Click Social Share */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-3 border-b border-malpas-blue/30 pb-3">
         <div>
-          <div className="text-xs uppercase tracking-wider text-emerald-400 font-semibold">{match.title} • {match.venue}</div>
+          <div className="text-xs uppercase tracking-wider text-amber-400 font-semibold">{match.title} • {match.venue}</div>
           <div className="text-2xl font-black tracking-tight text-white flex items-center gap-2">
             <span>{battingTeam.name}</span>
-            <span className="text-emerald-400 font-mono text-3xl">{inn.totalRuns}-{inn.wickets}</span>
+            <span className="text-amber-300 font-mono text-3xl">{inn.totalRuns}-{inn.wickets}</span>
             <span className="text-sm font-normal text-gray-400">({formatOvers(totalBallsBowled)} / {match.settings.oversPerInnings} ov)</span>
           </div>
         </div>
 
-        {/* Run Rate & Match Status */}
-        <div className="flex items-center gap-3">
-          <div className="bg-emerald-950/80 px-3 py-1.5 rounded-xl border border-emerald-500/20 text-right">
-            <div className="text-[10px] uppercase text-emerald-400 font-semibold">Run Rate</div>
-            <div className="text-lg font-bold font-mono text-white">{crr.toFixed(2)}</div>
-          </div>
-          <div className="bg-amber-950/60 px-3 py-1.5 rounded-xl border border-amber-500/30 text-right">
-            <div className="text-[10px] uppercase text-amber-400 font-semibold">Toss</div>
-            <div className="text-xs font-semibold text-amber-200">
-              {match.tossWinnerId === match.homeTeam.id ? match.homeTeam.shortName : match.awayTeam.shortName} chose to {match.tossDecision}
+        {/* 1-Click Social Media Share Buttons */}
+        <SocialShareButtons
+          matchTitle={match.title}
+          battingTeamName={battingTeam.name}
+          bowlingTeamName={bowlingTeam.name}
+          totalRuns={inn.totalRuns}
+          wickets={inn.wickets}
+          oversCompleted={inn.oversCompleted}
+          ballsInCurrentOver={inn.ballsInCurrentOver}
+          strikerName={strikerStats?.name}
+          strikerRuns={strikerStats?.runs}
+          nonStrikerName={nonStrikerStats?.name}
+          nonStrikerRuns={nonStrikerStats?.runs}
+          venue={match.venue}
+        />
+      </div>
+
+      {/* Middle Banner: Striker & Non-Striker Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {/* Striker */}
+        <div
+          onClick={onOpenBatterChange}
+          className="bg-malpas-navy/80 hover:bg-malpas-dark p-3 rounded-xl border border-amber-500/40 cursor-pointer transition-all flex items-center justify-between shadow-md"
+        >
+          <div>
+            <div className="text-[10px] uppercase font-bold text-amber-400 flex items-center gap-1">
+              <span>Striker</span>
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+            </div>
+            <div className="text-base font-bold text-white flex items-center gap-1.5">
+              {strikerStats ? strikerStats.name : 'Select Batter'}
             </div>
           </div>
+          {strikerStats && (
+            <div className="text-right font-mono">
+              <div className="text-xl font-black text-amber-300">{strikerStats.runs}</div>
+              <div className="text-[10px] text-gray-400">{strikerStats.ballsFaced}b • {strikerStats.fours}×4 {strikerStats.sixes}×6</div>
+            </div>
+          )}
+        </div>
+
+        {/* Non-Striker */}
+        <div
+          onClick={onSwapStrike}
+          className="bg-malpas-navy/80 hover:bg-malpas-dark p-3 rounded-xl border border-malpas-blue/30 cursor-pointer transition-all flex items-center justify-between shadow-md"
+        >
+          <div>
+            <div className="text-[10px] uppercase font-bold text-gray-400">Non-Striker</div>
+            <div className="text-base font-bold text-gray-200">
+              {nonStrikerStats ? nonStrikerStats.name : 'Select Batter'}
+            </div>
+          </div>
+          {nonStrikerStats && (
+            <div className="text-right font-mono">
+              <div className="text-xl font-bold text-gray-300">{nonStrikerStats.runs}</div>
+              <div className="text-[10px] text-gray-400">{nonStrikerStats.ballsFaced}b • {nonStrikerStats.fours}×4 {nonStrikerStats.sixes}×6</div>
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Middle Row: Active Batsmen & Bowler Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mt-3">
-        {/* Striker Card */}
-        <div
-          onClick={onSwapStrike}
-          className="glass-button p-3 rounded-xl cursor-pointer hover:border-emerald-500/50 flex items-center justify-between border-l-4 border-l-emerald-400"
-        >
-          <div>
-            <div className="flex items-center gap-1 text-xs text-emerald-400 font-bold uppercase">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              Striker ({strikerStats.name ? (allPlayers.find(p => p.id === inn.activeStrikerId)?.battingHand || 'RHB') : ''})
-            </div>
-            <div className="font-bold text-white text-base truncate">{strikerStats.name}</div>
-          </div>
-          <div className="text-right">
-            <div className="font-mono text-xl font-black text-emerald-300">{strikerStats.runs}</div>
-            <div className="text-xs text-gray-400">({strikerStats.ballsFaced}b • {strikerStats.fours}x4 {strikerStats.sixes}x6)</div>
-          </div>
-        </div>
-
-        {/* Non-Striker Card */}
-        <div
-          onClick={onSwapStrike}
-          className="glass-button p-3 rounded-xl cursor-pointer hover:border-gray-500/50 flex items-center justify-between border-l-4 border-l-gray-600"
-        >
-          <div>
-            <div className="text-xs text-gray-400 font-semibold uppercase">Non-Striker</div>
-            <div className="font-bold text-white text-base truncate">{nonStrikerStats.name}</div>
-          </div>
-          <div className="text-right">
-            <div className="font-mono text-xl font-bold text-gray-200">{nonStrikerStats.runs}</div>
-            <div className="text-xs text-gray-400">({nonStrikerStats.ballsFaced}b)</div>
-          </div>
-        </div>
-
-        {/* Bowler Card */}
+      {/* Bottom Row: Bowler & Recent Over Balls */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
         <div
           onClick={onOpenBowlerChange}
-          className="glass-button p-3 rounded-xl cursor-pointer hover:border-emerald-500/50 flex items-center justify-between border-l-4 border-l-amber-500"
+          className="w-full sm:w-auto bg-malpas-navy/60 hover:bg-malpas-navy p-2.5 rounded-xl border border-malpas-blue/30 cursor-pointer flex items-center gap-3"
         >
-          <div>
-            <div className="flex items-center gap-1 text-xs text-amber-400 font-bold uppercase">
-              Current Bowler
-            </div>
-            <div className="font-bold text-white text-base truncate">{activeBowler?.name || 'Select Bowler'}</div>
-          </div>
-          <div className="text-right">
-            <div className="font-mono text-lg font-bold text-amber-300">
-              {bowlerWickets}-{bowlerRuns}
-            </div>
-            <div className="text-xs text-gray-400">({formatOvers(bowlerBalls)} ov)</div>
+          <UserCheck className="w-4 h-4 text-blue-400 shrink-0" />
+          <div className="text-xs">
+            <span className="text-gray-400 font-semibold">Bowler: </span>
+            <span className="font-bold text-white">{activeBowler ? activeBowler.name : 'Choose Bowler'}</span>
+            <span className="font-mono text-amber-400 ml-2 font-bold">
+              {bowlerWickets}-{bowlerRuns} ({formatOvers(bowlerBalls)})
+            </span>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Over Sequence Bar */}
-      <div className="mt-3 pt-2 border-t border-emerald-900/30 flex items-center justify-between">
-        <div className="text-xs text-gray-400 font-medium">This Over ({recentBalls.length}/6):</div>
-        <div className="flex items-center gap-1.5 overflow-x-auto py-1">
-          {recentBalls.map((b, i) => {
-            let label = `${b.totalRuns}`;
-            let bg = 'bg-emerald-900/40 text-emerald-200 border-emerald-700/50';
-
-            if (b.wicket) {
-              label = 'W';
-              bg = 'bg-rose-600 text-white font-bold border-rose-400 animate-pulse';
-            } else if (b.runs === 4 || b.runs === 6) {
-              bg = 'bg-amber-500 text-black font-black border-amber-300';
-            } else if (b.extras.type === 'wide') {
-              label = `WD${b.totalRuns > 1 ? b.totalRuns : ''}`;
-              bg = 'bg-blue-600 text-white font-bold';
-            } else if (b.extras.type === 'noBall') {
-              label = `NB${b.totalRuns > 1 ? b.totalRuns : ''}`;
-              bg = 'bg-purple-600 text-white font-bold';
-            } else if (b.runs === 0) {
-              label = '•';
-              bg = 'bg-gray-800 text-gray-400 border-gray-700';
-            }
-
-            return (
+        {/* Current Over Balls */}
+        <div className="flex items-center gap-1 overflow-x-auto py-1">
+          <span className="text-[10px] uppercase font-bold text-gray-400 mr-1">Over:</span>
+          {recentBalls.length === 0 ? (
+            <span className="text-xs text-gray-500 italic">No balls bowled</span>
+          ) : (
+            recentBalls.map((b, i) => (
               <span
                 key={i}
-                className={`w-7 h-7 rounded-full border text-xs flex items-center justify-center font-mono shadow ${bg}`}
+                className={`w-7 h-7 rounded-full flex items-center justify-center font-mono font-bold text-xs shadow-sm ${
+                  b.wicket
+                    ? 'bg-red-600 text-white animate-bounce'
+                    : b.runs === 6
+                    ? 'bg-purple-600 text-white'
+                    : b.runs === 4
+                    ? 'bg-emerald-600 text-white'
+                    : b.runs === 0
+                    ? 'bg-gray-800 text-gray-400 border border-gray-700'
+                    : 'bg-malpas-blue text-white'
+                }`}
               >
-                {label}
+                {b.wicket ? 'W' : b.runs}
               </span>
-            );
-          })}
+            ))
+          )}
         </div>
       </div>
     </header>

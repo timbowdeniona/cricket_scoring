@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { MalpasFixture, MalpasTeamId } from '@/types/malpas';
-import { Calendar, MapPin, CheckCircle, Clock, Trophy, ChevronRight } from 'lucide-react';
+import { Calendar, MapPin, Clock } from 'lucide-react';
+import { SocialShareButtons } from '@/components/scoring/SocialShareButtons';
 
 interface FixturesResultsViewProps {
   fixtures: MalpasFixture[];
@@ -58,7 +59,7 @@ export function FixturesResultsView({ fixtures, selectedTeamId }: FixturesResult
           teamFixtures.map(f => (
             <div
               key={f.id}
-              className="bg-malpas-navy/80 hover:bg-malpas-dark p-4 rounded-xl border border-malpas-blue/30 shadow-md transition-all space-y-2"
+              className="bg-malpas-navy/80 hover:bg-malpas-dark p-4 rounded-xl border border-malpas-blue/30 shadow-md transition-all space-y-3"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 border-b border-malpas-blue/20 pb-2">
                 <div className="flex items-center gap-2">
@@ -101,6 +102,22 @@ export function FixturesResultsView({ fixtures, selectedTeamId }: FixturesResult
                     </div>
                   </div>
                 )}
+              </div>
+
+              {/* 1-Click Social Media Share for Scorecard */}
+              <div className="pt-2 border-t border-malpas-blue/20 flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase text-gray-400">Share Scorecard</span>
+                <SocialShareButtons
+                  matchTitle={f.competition}
+                  battingTeamName="Malpas CC"
+                  bowlingTeamName={f.opponent}
+                  totalRuns={f.malpasScore ? parseInt(f.malpasScore.split('-')[0]) || 0 : 0}
+                  wickets={f.malpasScore && f.malpasScore.includes('-') ? parseInt(f.malpasScore.split('-')[1]) || 0 : 0}
+                  oversCompleted={40}
+                  ballsInCurrentOver={0}
+                  venue={f.ground}
+                  customText={`🏏 *Malpas CC Match Result* 🏏\n🏆 ${f.competition}\n⚔️ Malpas CC vs ${f.opponent}\n📊 Score: ${f.malpasScore || 'N/A'} vs ${f.opponentScore || 'N/A'}\n✨ Result: ${f.resultText || f.status}\n📍 ${f.ground}\n\nView scorecard on Malpas CC Portal: https://malpas.play-cricket.com`}
+                />
               </div>
             </div>
           ))

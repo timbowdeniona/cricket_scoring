@@ -2,8 +2,9 @@
 
 import React from 'react';
 import { Innings, Player } from '@/types/cricket';
-import { FileSpreadsheet, Download, Share2, Printer, BarChart2, PieChart } from 'lucide-react';
+import { FileSpreadsheet, Printer, BarChart2 } from 'lucide-react';
 import { trackEvent } from './GoogleAnalytics';
+import { SocialShareButtons } from '@/components/scoring/SocialShareButtons';
 
 interface MatchReportingViewProps {
   innings: Innings;
@@ -56,10 +57,19 @@ export function MatchReportingView({ innings, players }: MatchReportingViewProps
           <p className="text-xs text-gray-300">Detailed boundary ratios, dot ball percentages, and CSV ball-by-ball export</p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          <SocialShareButtons
+            matchTitle="Match Summary Report"
+            battingTeamName="Malpas CC"
+            bowlingTeamName="Opponent"
+            totalRuns={innings.totalRuns}
+            wickets={innings.wickets}
+            oversCompleted={innings.oversCompleted}
+            ballsInCurrentOver={innings.ballsInCurrentOver}
+          />
           <button
             onClick={handleExportCsv}
-            className="px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition-all"
+            className="px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center gap-1.5 shadow transition-all"
           >
             <FileSpreadsheet className="w-4 h-4" />
             Export CSV
@@ -69,10 +79,10 @@ export function MatchReportingView({ innings, players }: MatchReportingViewProps
               trackEvent('print_match_report');
               window.print();
             }}
-            className="px-3.5 py-2 rounded-xl bg-malpas-blue hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow transition-all border border-blue-400/40"
+            className="px-3.5 py-1.5 rounded-lg bg-malpas-blue hover:bg-blue-600 text-white font-bold text-xs flex items-center gap-1.5 shadow transition-all border border-blue-400/40"
           >
             <Printer className="w-4 h-4" />
-            Print Report
+            Print
           </button>
         </div>
       </div>
