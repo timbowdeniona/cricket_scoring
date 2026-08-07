@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { useMatchEngine } from '@/store/matchStore';
 import { MalpasTeamId, MalpasFixture, MalpasPlayerStats } from '@/types/malpas';
 import { MalpasScraperClient } from '@/services/malpasScraper';
-import { MALPAS_FIXTURES, MALPAS_PLAYER_STATS, MALPAS_PLAYERS_1ST_XI, MALPAS_PLAYERS_2ND_XI, MALPAS_PLAYERS_SUNDAY_XI } from '@/services/malpasData';
+import { MALPAS_FIXTURES, MALPAS_PLAYER_STATS } from '@/services/malpasData';
+import { trackEvent } from '@/components/analytics/GoogleAnalytics';
 
 import { MalpasHeroBanner } from '@/components/portal/MalpasHeroBanner';
 import { FixturesResultsView } from '@/components/portal/FixturesResultsView';
@@ -15,14 +16,12 @@ import { LiveHeader } from '@/components/scoring/LiveHeader';
 import { QuickKeypad } from '@/components/scoring/QuickKeypad';
 import { BatterBowlerSelector } from '@/components/scoring/BatterBowlerSelector';
 import { WicketModal } from '@/components/scoring/WicketModal';
-import { WagonWheel2D } from '@/components/ground/WagonWheel2D';
-import { PitchMap2D } from '@/components/ground/PitchMap2D';
 import { BatsmanInningsView } from '@/components/analytics/BatsmanInningsView';
+import { MatchReportingView } from '@/components/analytics/MatchReportingView';
 import { Innings3DCanvas } from '@/components/simulation/Innings3DCanvas';
 import { TeamManager } from '@/components/teams/TeamManager';
 import { PlayCricketImporter } from '@/components/teams/PlayCricketImporter';
 import { SettingsModal } from '@/components/settings/SettingsModal';
-import { MatchHistory } from '@/components/persistence/MatchHistory';
 
 import {
   Activity,
@@ -31,9 +30,7 @@ import {
   Trophy,
   Users,
   Box,
-  Database,
-  Settings,
-  Shield,
+  FileSpreadsheet,
 } from 'lucide-react';
 
 export default function Home() {
@@ -42,21 +39,15 @@ export default function Home() {
     setMatch,
     pcConfig,
     updatePlayCricketConfig,
-    savedMatches,
-    loadSampleMatch,
     recordBall,
     undoLastBall,
     swapStrike,
     setStriker,
-    setNonStriker,
     setBowler,
-    saveCurrentMatchToHistory,
-    exportMatchJson,
-    importMatchJson,
   } = useMatchEngine();
 
   const [selectedTeamId, setSelectedTeamId] = useState<MalpasTeamId>('1st_xi');
-  const [activeTab, setActiveTab] = useState<'fixtures' | 'stats' | 'history' | 'scoring' | 'teams' | 'simulation'>('fixtures');
+  const [activeTab, setActiveTab] = useState<'fixtures' | 'stats' | 'history' | 'scoring' | 'reports' | 'teams' | 'simulation'>('fixtures');
 
   const [fixtures, setFixtures] = useState<MalpasFixture[]>(MALPAS_FIXTURES);
   const [stats, setStats] = useState<MalpasPlayerStats[]>(MALPAS_PLAYER_STATS);
@@ -73,6 +64,16 @@ export default function Home() {
     client.getFixtures(selectedTeamId).then(data => setFixtures(data));
     client.getPlayerStats(selectedTeamId).then(data => setStats(data));
   }, [selectedTeamId]);
+
+  const handleTabChange = (tab: typeof activeTab) => {
+    setActiveTab(tab);
+    trackEvent('tab_view', { tab_name: tab, team_id: selectedTeamId });
+  };
+
+  const handleTeamChange = (teamId: MalpasTeamId) => {
+    setSelectedTeamId(teamId);
+    trackEvent('team_select', { team_id: teamId });
+  };
 
   if (!match) {
     return (
@@ -98,12 +99,12 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-malpas-navy text-foreground p-3 sm:p-6 max-w-6xl mx-auto space-y-5 pb-16">
       {/* Malpas CC Hero Header */}
-      <MalpasHeroBanner selectedTeamId={selectedTeamId} onSelectTeam={setSelectedTeamId} />
+      <MalpasHeroBanner selectedTeamId={selectedTeamId} onSelectTeam={handleTeamChange} />
 
       {/* Main Tab Navigation Bar */}
       <div className="flex items-center gap-1.5 overflow-x-auto bg-black/40 p-1.5 rounded-2xl border border-malpas-blue/30">
         <button
-          onClick={() => setActiveTab('fixtures')}
+          onClick={() => handleTabChange('fixtures')}
           className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
             activeTab === 'fixtures'
               ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
@@ -115,7 +116,7 @@ export default function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab('stats')}
+          onClick={() => handleTabChange('stats')}
           className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
             activeTab === 'stats'
               ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
@@ -127,7 +128,7 @@ export default function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab('history')}
+          onClick={() => handleTabChange('history')}
           className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
             activeTab === 'history'
               ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
@@ -139,7 +140,7 @@ export default function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab('scoring')}
+          onClick={() => handleTabChange('scoring')}
           className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
             activeTab === 'scoring'
               ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
@@ -151,7 +152,19 @@ export default function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab('simulation')}
+          onClick={() => handleTabChange('reports')}
+          className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
+            activeTab === 'reports'
+              ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
+              : 'text-gray-300 hover:text-white hover:bg-malpas-blue/30'
+          }`}
+        >
+          <FileSpreadsheet className="w-4 h-4 text-emerald-400" />
+          Reports
+        </button>
+
+        <button
+          onClick={() => handleTabChange('simulation')}
           className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
             activeTab === 'simulation'
               ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
@@ -163,7 +176,7 @@ export default function Home() {
         </button>
 
         <button
-          onClick={() => setActiveTab('teams')}
+          onClick={() => handleTabChange('teams')}
           className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs flex items-center justify-center gap-2 transition-all shrink-0 ${
             activeTab === 'teams'
               ? 'bg-malpas-blue text-white shadow-lg scale-[1.02] border border-blue-400'
@@ -211,12 +224,17 @@ export default function Home() {
         </div>
       )}
 
-      {/* Tab 5: 3D Innings Simulation */}
+      {/* Tab 5: Reports & CSV Export */}
+      {activeTab === 'reports' && (
+        <MatchReportingView innings={inn} players={battingTeam.players} />
+      )}
+
+      {/* Tab 6: 3D Innings Simulation */}
       {activeTab === 'simulation' && (
         <Innings3DCanvas innings={inn} players={battingTeam.players} />
       )}
 
-      {/* Tab 6: Squad Manager */}
+      {/* Tab 7: Squad Manager */}
       {activeTab === 'teams' && (
         <TeamManager
           homeTeam={match.homeTeam}
