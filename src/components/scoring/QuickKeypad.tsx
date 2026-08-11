@@ -64,24 +64,33 @@ export function QuickKeypad({
   return (
     <div className="w-full glass-panel rounded-2xl p-4 shadow-xl border border-emerald-900/40 mt-4">
       {/* Top Extras Row */}
-      <div className="flex items-center justify-between gap-2 mb-3">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
         <div className="text-xs font-bold uppercase tracking-wider text-gray-400">Scoring Controls</div>
 
         {/* Extras Selectors */}
-        <div className="flex items-center gap-1.5 overflow-x-auto">
-          {(['wide', 'noBall', 'bye', 'legBye'] as ExtrasType[]).map(ext => {
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 sm:pb-0">
+          {(['wide', 'noBall', 'bye', 'legBye'] as const).map(ext => {
             const isSelected = selectedExtra === ext;
+            const extraLabels: Record<Extract<ExtrasType, 'wide' | 'noBall' | 'bye' | 'legBye'>, { text: string; aria: string }> = {
+              wide: { text: 'Wide (+1)', aria: 'Extra Wide plus one run' },
+              noBall: { text: 'No Ball (+1)', aria: 'Extra No Ball plus one run' },
+              bye: { text: 'Bye', aria: 'Extra Bye' },
+              legBye: { text: 'Leg Bye', aria: 'Extra Leg Bye' },
+            };
             return (
               <button
+                type="button"
                 key={ext}
                 onClick={() => setSelectedExtra(isSelected ? null : ext)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-bold uppercase transition-all shadow ${
+                aria-label={extraLabels[ext].aria}
+                aria-pressed={isSelected}
+                className={`min-h-[48px] h-12 flex items-center justify-center font-bold text-sm rounded-xl px-3 uppercase transition-all shadow focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy ${
                   isSelected
                     ? 'bg-amber-500 text-black border-2 border-amber-300 scale-105'
                     : 'bg-emerald-950/60 text-emerald-300 border border-emerald-800/40 hover:bg-emerald-900/50'
                 }`}
               >
-                {ext === 'wide' ? 'Wide (+1)' : ext === 'noBall' ? 'No Ball (+1)' : ext === 'bye' ? 'Bye' : 'Leg Bye'}
+                {extraLabels[ext].text}
               </button>
             );
           })}
@@ -92,47 +101,61 @@ export function QuickKeypad({
       <div className="grid grid-cols-4 gap-3">
         {/* Runs 0 to 6 */}
         <button
+          type="button"
           onClick={() => handleRunPress(0)}
-          className="h-16 rounded-xl bg-gray-800 hover:bg-gray-700 active:scale-95 text-white font-mono text-2xl font-black border border-gray-600 shadow-md flex items-center justify-center"
+          aria-label="Record 0 runs (Dot ball)"
+          className="min-h-[48px] h-16 rounded-xl bg-gray-800 hover:bg-gray-700 active:scale-95 text-white font-mono text-2xl font-black border border-gray-600 shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
         >
           0
         </button>
         <button
+          type="button"
           onClick={() => handleRunPress(1)}
-          className="h-16 rounded-xl bg-emerald-900/60 hover:bg-emerald-800/80 active:scale-95 text-emerald-200 font-mono text-2xl font-black border border-emerald-700/50 shadow-md flex items-center justify-center"
+          aria-label="Record 1 run"
+          className="min-h-[48px] h-16 rounded-xl bg-emerald-900/60 hover:bg-emerald-800/80 active:scale-95 text-emerald-200 font-mono text-2xl font-black border border-emerald-700/50 shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
         >
           1
         </button>
         <button
+          type="button"
           onClick={() => handleRunPress(2)}
-          className="h-16 rounded-xl bg-emerald-900/60 hover:bg-emerald-800/80 active:scale-95 text-emerald-200 font-mono text-2xl font-black border border-emerald-700/50 shadow-md flex items-center justify-center"
+          aria-label="Record 2 runs"
+          className="min-h-[48px] h-16 rounded-xl bg-emerald-900/60 hover:bg-emerald-800/80 active:scale-95 text-emerald-200 font-mono text-2xl font-black border border-emerald-700/50 shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
         >
           2
         </button>
         <button
+          type="button"
           onClick={() => handleRunPress(3)}
-          className="h-16 rounded-xl bg-emerald-900/60 hover:bg-emerald-800/80 active:scale-95 text-emerald-200 font-mono text-2xl font-black border border-emerald-700/50 shadow-md flex items-center justify-center"
+          aria-label="Record 3 runs"
+          className="min-h-[48px] h-16 rounded-xl bg-emerald-900/60 hover:bg-emerald-800/80 active:scale-95 text-emerald-200 font-mono text-2xl font-black border border-emerald-700/50 shadow-md flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
         >
           3
         </button>
 
         <button
+          type="button"
           onClick={() => handleRunPress(4)}
-          className="h-16 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95 text-black font-mono text-3xl font-black border-2 border-amber-300 shadow-lg flex items-center justify-center"
+          aria-label="Record 4 runs (Boundary)"
+          className="min-h-[48px] h-16 rounded-xl bg-amber-600 hover:bg-amber-500 active:scale-95 text-black font-mono text-3xl font-black border-2 border-amber-300 shadow-lg flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
         >
           4
         </button>
         <button
+          type="button"
           onClick={() => handleRunPress(6)}
-          className="h-16 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-mono text-3xl font-black border-2 border-amber-200 shadow-lg flex items-center justify-center"
+          aria-label="Record 6 runs (Six)"
+          className="min-h-[48px] h-16 rounded-xl bg-amber-500 hover:bg-amber-400 active:scale-95 text-black font-mono text-3xl font-black border-2 border-amber-200 shadow-lg flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
         >
           6
         </button>
 
         {/* Wicket Button */}
         <button
+          type="button"
           onClick={onOpenWicketModal}
-          className="h-16 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-lg border-2 border-rose-400 shadow-lg flex items-center justify-center gap-1.5"
+          aria-label="Record Wicket (Out)"
+          className="min-h-[48px] h-16 rounded-xl bg-rose-600 hover:bg-rose-500 active:scale-95 text-white font-bold text-lg border-2 border-rose-400 shadow-lg flex items-center justify-center gap-1.5 focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
         >
           <AlertTriangle className="w-5 h-5" />
           OUT
@@ -140,8 +163,10 @@ export function QuickKeypad({
 
         {/* Undo Button */}
         <button
+          type="button"
           onClick={onUndoLastBall}
-          className="h-16 rounded-xl bg-gray-900 hover:bg-gray-800 active:scale-95 text-gray-300 font-semibold text-sm border border-gray-700 shadow-md flex flex-col items-center justify-center"
+          aria-label="Undo last ball"
+          className="min-h-[48px] h-16 rounded-xl bg-gray-900 hover:bg-gray-800 active:scale-95 text-gray-300 font-semibold text-sm border border-gray-700 shadow-md flex flex-col items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
         >
           <RotateCcw className="w-5 h-5 mb-0.5 text-amber-400" />
           Undo
@@ -168,8 +193,10 @@ export function QuickKeypad({
                 <p className="text-xs text-emerald-400">Tap where the ball went on the ground & pitch map</p>
               </div>
               <button
+                type="button"
                 onClick={() => setShowLocationPicker(false)}
-                className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800"
+                aria-label="Close location picker"
+                className="p-2 min-h-[48px] min-w-[48px] rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -192,14 +219,18 @@ export function QuickKeypad({
             {/* Action Buttons */}
             <div className="w-full flex items-center justify-end gap-3 mt-6 pt-4 border-t border-emerald-900/40">
               <button
+                type="button"
                 onClick={() => handleConfirmBall(true)}
-                className="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium border border-gray-600"
+                aria-label="Skip location recording"
+                className="min-h-[48px] px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium border border-gray-600 flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
               >
                 Skip Location
               </button>
               <button
+                type="button"
                 onClick={() => handleConfirmBall(false)}
-                className="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-lg flex items-center gap-2"
+                aria-label="Confirm ball placement and record"
+                className="min-h-[48px] px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-sm shadow-lg flex items-center gap-2 justify-center focus:outline-none focus:ring-2 focus:ring-amber-400 focus:ring-offset-2 focus:ring-offset-malpas-navy"
               >
                 <Check className="w-4 h-4" />
                 Confirm Ball

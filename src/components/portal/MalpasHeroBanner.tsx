@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import Image from 'next/image';
 import { MalpasTeamId } from '@/types/malpas';
 import { MALPAS_TEAMS } from '@/services/malpasData';
 import { MapPin, Shield, Trophy, Users, Calendar } from 'lucide-react';
@@ -16,8 +15,15 @@ export function MalpasHeroBanner({ selectedTeamId, onSelectTeam }: MalpasHeroBan
 
   return (
     <div className="w-full glass-panel rounded-2xl p-5 border border-malpas-blue/40 shadow-2xl relative overflow-hidden tie-stripe-bg">
-      {/* Background Subtle Gradient Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-malpas-navy/95 via-malpas-dark/90 to-malpas-blue/30 pointer-events-none" />
+      {/* Background Stadium Photo */}
+      <img
+        src="/images/hero_cricket_match.jpg"
+        alt="Malpas Cricket Stadium"
+        className="absolute inset-0 w-full h-full object-cover opacity-25 rounded-2xl pointer-events-none"
+      />
+
+      {/* Background Smooth Gradient Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-malpas-navy via-malpas-navy/80 to-transparent pointer-events-none" />
 
       <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-5">
         {/* Left: Crest & Club Branding */}
@@ -50,7 +56,7 @@ export function MalpasHeroBanner({ selectedTeamId, onSelectTeam }: MalpasHeroBan
         </div>
 
         {/* Right: Team Selection Switcher */}
-        <div className="w-full md:w-auto bg-black/40 p-2 rounded-2xl border border-malpas-blue/30 flex flex-col sm:flex-row gap-1.5">
+        <div className="w-full md:w-auto bg-black/40 p-1.5 rounded-2xl border border-malpas-blue/30 flex flex-col sm:flex-row gap-1.5">
           {(['1st_xi', '2nd_xi', 'sunday_xi'] as MalpasTeamId[]).map(tId => {
             const team = MALPAS_TEAMS[tId];
             const isSelected = selectedTeamId === tId;
@@ -58,13 +64,13 @@ export function MalpasHeroBanner({ selectedTeamId, onSelectTeam }: MalpasHeroBan
               <button
                 key={tId}
                 onClick={() => onSelectTeam(tId)}
-                className={`px-4 py-2.5 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-1.5 border ${
+                className={`min-h-[48px] px-4 py-3 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 border ${
                   isSelected
                     ? 'bg-malpas-blue text-white border-blue-400 shadow-lg scale-[1.02]'
                     : 'bg-malpas-navy/60 text-gray-300 border-malpas-blue/20 hover:bg-malpas-blue/30'
                 }`}
               >
-                <Shield className={`w-3.5 h-3.5 ${isSelected ? 'text-amber-400' : 'text-gray-400'}`} />
+                <Shield className={`w-4 h-4 ${isSelected ? 'text-amber-400' : 'text-gray-400'}`} />
                 {team.shortName}
               </button>
             );

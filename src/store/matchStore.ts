@@ -8,7 +8,7 @@ const HISTORY_STORAGE_KEY = 'cricket_scoring_match_history';
 const PC_CONFIG_KEY = 'cricket_scoring_pc_config';
 
 export function useMatchEngine() {
-  const [match, setMatch] = useState<Match | null>(null);
+  const [match, setMatch] = useState<Match | null>(() => createSampleMatch());
   const [savedMatches, setSavedMatches] = useState<Match[]>([]);
   const [pcConfig, setPcConfig] = useState<PlayCricketConfig>({
     siteId: '',
@@ -19,26 +19,24 @@ export function useMatchEngine() {
   // Load state on initial mount from LocalStorage / IndexedDB
   useEffect(() => {
     try {
-      const storedMatch = localStorage.getItem(MATCH_STORAGE_KEY);
-      if (storedMatch) {
-        setMatch(JSON.parse(storedMatch));
-      } else {
-        const sample = createSampleMatch();
-        setMatch(sample);
-      }
+      if (typeof window !== 'undefined') {
+        const storedMatch = localStorage.getItem(MATCH_STORAGE_KEY);
+        if (storedMatch) {
+          setMatch(JSON.parse(storedMatch));
+        }
 
-      const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
-      if (storedHistory) {
-        setSavedMatches(JSON.parse(storedHistory));
-      }
+        const storedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
+        if (storedHistory) {
+          setSavedMatches(JSON.parse(storedHistory));
+        }
 
-      const storedPc = localStorage.getItem(PC_CONFIG_KEY);
-      if (storedPc) {
-        setPcConfig(JSON.parse(storedPc));
+        const storedPc = localStorage.getItem(PC_CONFIG_KEY);
+        if (storedPc) {
+          setPcConfig(JSON.parse(storedPc));
+        }
       }
     } catch (e) {
       console.warn('Failed loading match state from local storage', e);
-      setMatch(createSampleMatch());
     }
   }, []);
 

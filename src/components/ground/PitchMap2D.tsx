@@ -19,8 +19,9 @@ export function PitchMap2D({
   const handleClick = (e: React.MouseEvent<SVGSVGElement> | React.TouchEvent<SVGSVGElement>) => {
     if (!onSelectPitchLocation || !svgRef.current) return;
     const rect = svgRef.current.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    const touches = 'touches' in e && e.touches.length > 0 ? e.touches : ('changedTouches' in e && e.changedTouches.length > 0 ? e.changedTouches : null);
+    const clientX = touches && touches.length > 0 ? touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = touches && touches.length > 0 ? touches[0].clientY : (e as React.MouseEvent).clientY;
 
     const px = Math.min(Math.max((clientX - rect.left) / rect.width, 0), 1);
     const py = Math.min(Math.max((clientY - rect.top) / rect.height, 0), 1);

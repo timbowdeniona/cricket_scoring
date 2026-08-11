@@ -27,8 +27,9 @@ export function WagonWheel2D({
     if (!interactive || !onSelectLocation || !svgRef.current) return;
 
     const rect = svgRef.current.getBoundingClientRect();
-    const clientX = 'touches' in e ? e.touches[0].clientX : (e as React.MouseEvent).clientX;
-    const clientY = 'touches' in e ? e.touches[0].clientY : (e as React.MouseEvent).clientY;
+    const touches = 'touches' in e && e.touches.length > 0 ? e.touches : ('changedTouches' in e && e.changedTouches.length > 0 ? e.changedTouches : null);
+    const clientX = touches && touches.length > 0 ? touches[0].clientX : (e as React.MouseEvent).clientX;
+    const clientY = touches && touches.length > 0 ? touches[0].clientY : (e as React.MouseEvent).clientY;
 
     const svgX = clientX - rect.left;
     const svgY = clientY - rect.top;

@@ -40,11 +40,29 @@ export interface MalpasPlayerStats {
   fifties: number;
   oversBowled: number;
   wickets: number;
+  fiveWickets: number;
   bestBowling: string;
   bowlingAverage: number;
   economy: number;
+  bowlingStyle?: string;
+  bowlingType?: 'seam' | 'spin';
   catches: number;
   stumpings: number;
+}
+
+export interface SpinVsSeamCategoryStats {
+  overs: number;
+  wickets: number;
+  runsConceded: number;
+  average: number;
+  economy: number;
+  bestBowling: string;
+  bowlerCount: number;
+}
+
+export interface SpinVsSeamBreakdown {
+  seam: SpinVsSeamCategoryStats;
+  spin: SpinVsSeamCategoryStats;
 }
 
 export interface MalpasClubRecord {
@@ -55,3 +73,31 @@ export interface MalpasClubRecord {
   year: string;
   opponent?: string;
 }
+
+export type MalpasNewsCategory = 'Match Report' | 'Club News' | 'Junior Academy' | '1st XI' | '2nd XI' | 'Sunday XI' | 'Social';
+
+export interface MalpasMatchHighlight {
+  label: string;
+  performer: string;
+}
+
+export interface MalpasNewsArticle {
+  id: string;
+  title: string;
+  subtitle?: string;
+  date: string;
+  category: MalpasNewsCategory;
+  imageUrl: string;
+  author: string;
+  summary: string;
+  content: string[];
+  teamId?: MalpasTeamId;
+  isFeatured?: boolean;
+  matchHighlights?: MalpasMatchHighlight[];
+  scoreSummary?: {
+    homeScore: string;
+    awayScore: string;
+    result: string;
+  };
+}
+

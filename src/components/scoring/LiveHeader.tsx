@@ -86,9 +86,11 @@ export function LiveHeader({
       {/* Middle Banner: Striker & Non-Striker Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         {/* Striker */}
-        <div
+        <button
+          type="button"
           onClick={onOpenBatterChange}
-          className="bg-malpas-navy/80 hover:bg-malpas-dark p-3 rounded-xl border border-amber-500/40 cursor-pointer transition-all flex items-center justify-between shadow-md"
+          aria-label={`Change Striker: ${strikerStats ? strikerStats.name : 'Select Batter'}`}
+          className="w-full text-left bg-malpas-navy/80 hover:bg-malpas-dark focus:outline-none focus:ring-2 focus:ring-amber-400 min-h-[48px] p-3 rounded-xl border border-amber-500/40 cursor-pointer transition-all flex items-center justify-between shadow-md"
         >
           <div>
             <div className="text-[10px] uppercase font-bold text-amber-400 flex items-center gap-1">
@@ -105,12 +107,14 @@ export function LiveHeader({
               <div className="text-[10px] text-gray-400">{strikerStats.ballsFaced}b • {strikerStats.fours}×4 {strikerStats.sixes}×6</div>
             </div>
           )}
-        </div>
+        </button>
 
         {/* Non-Striker */}
-        <div
+        <button
+          type="button"
           onClick={onSwapStrike}
-          className="bg-malpas-navy/80 hover:bg-malpas-dark p-3 rounded-xl border border-malpas-blue/30 cursor-pointer transition-all flex items-center justify-between shadow-md"
+          aria-label={`Swap strike with Non-Striker: ${nonStrikerStats ? nonStrikerStats.name : 'Select Batter'}`}
+          className="w-full text-left bg-malpas-navy/80 hover:bg-malpas-dark focus:outline-none focus:ring-2 focus:ring-malpas-blue min-h-[48px] p-3 rounded-xl border border-malpas-blue/30 cursor-pointer transition-all flex items-center justify-between shadow-md"
         >
           <div>
             <div className="text-[10px] uppercase font-bold text-gray-400">Non-Striker</div>
@@ -124,14 +128,16 @@ export function LiveHeader({
               <div className="text-[10px] text-gray-400">{nonStrikerStats.ballsFaced}b • {nonStrikerStats.fours}×4 {nonStrikerStats.sixes}×6</div>
             </div>
           )}
-        </div>
+        </button>
       </div>
 
       {/* Bottom Row: Bowler & Recent Over Balls */}
       <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-1">
-        <div
+        <button
+          type="button"
           onClick={onOpenBowlerChange}
-          className="w-full sm:w-auto bg-malpas-navy/60 hover:bg-malpas-navy p-2.5 rounded-xl border border-malpas-blue/30 cursor-pointer flex items-center gap-3"
+          aria-label={`Change Bowler: ${activeBowler ? activeBowler.name : 'Choose Bowler'}`}
+          className="w-full sm:w-auto text-left bg-malpas-navy/60 hover:bg-malpas-navy focus:outline-none focus:ring-2 focus:ring-blue-400 min-h-[48px] p-2.5 rounded-xl border border-malpas-blue/30 cursor-pointer flex items-center gap-3"
         >
           <UserCheck className="w-4 h-4 text-blue-400 shrink-0" />
           <div className="text-xs">
@@ -141,7 +147,7 @@ export function LiveHeader({
               {bowlerWickets}-{bowlerRuns} ({formatOvers(bowlerBalls)})
             </span>
           </div>
-        </div>
+        </button>
 
         {/* Current Over Balls */}
         <div className="flex items-center gap-1 overflow-x-auto py-1">

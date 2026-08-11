@@ -1,16 +1,18 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url);
-  const siteId = searchParams.get('site_id');
-  const apiToken = searchParams.get('api_token');
-  const teamId = searchParams.get('team_id');
-
-  if (!siteId || !apiToken) {
-    return NextResponse.json({ error: 'Missing site_id or api_token' }, { status: 400 });
-  }
-
   try {
+    const url = new URL(request.url, 'http://localhost');
+    const siteId = url.searchParams.get('site_id');
+    const apiToken = url.searchParams.get('api_token');
+    const teamId = url.searchParams.get('team_id');
+
+    if (!siteId || !apiToken) {
+      return NextResponse.json({ error: 'Missing site_id or api_token' }, { status: 400 });
+    }
+
     const pcUrl = `http://play-cricket.com/api/v2/result_summary.json?site_id=${siteId}&api_token=${apiToken}${teamId ? `&team_id=${teamId}` : ''}`;
     const res = await fetch(pcUrl, { headers: { Accept: 'application/json' } });
     if (!res.ok) {
@@ -22,3 +24,4 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: err.message || 'Server error proxying request' }, { status: 500 });
   }
 }
+

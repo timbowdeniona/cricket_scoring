@@ -1,4 +1,3 @@
-import crypto from 'crypto';
 import { MalpasFixture, MalpasPlayerStats, MalpasTeamId } from '@/types/malpas';
 import { MALPAS_FIXTURES, MALPAS_PLAYER_STATS } from './malpasData';
 
@@ -9,7 +8,74 @@ const TEAM_PLAY_CRICKET_IDS: Record<MalpasTeamId, string> = {
 };
 
 function sha1(str: string): string {
-  return crypto.createHash('sha1').update(str, 'utf8').digest('hex');
+  const buffer = new TextEncoder().encode(str);
+  let h0 = 0x67452301;
+  let h1 = 0xefcdab89;
+  let h2 = 0x98badcfe;
+  let h3 = 0x10325476;
+  let h4 = 0xc3d2e1f0;
+
+  const len = buffer.length;
+  const bitLen = len * 8;
+
+  const padLen = (len % 64 < 56) ? 56 - (len % 64) : 120 - (len % 64);
+  const padded = new Uint8Array(len + padLen + 8);
+  padded.set(buffer);
+  padded[len] = 0x80;
+
+  const view = new DataView(padded.buffer);
+  view.setUint32(padded.length - 4, bitLen, false);
+
+  for (let offset = 0; offset < padded.length; offset += 64) {
+    const w = new Uint32Array(80);
+    for (let i = 0; i < 16; i++) {
+      w[i] = view.getUint32(offset + i * 4, false);
+    }
+    for (let i = 16; i < 80; i++) {
+      const val = w[i - 3] ^ w[i - 8] ^ w[i - 14] ^ w[i - 16];
+      w[i] = (val << 1) | (val >>> 31);
+    }
+
+    let a = h0;
+    let b = h1;
+    let c = h2;
+    let d = h3;
+    let e = h4;
+
+    for (let i = 0; i < 80; i++) {
+      let f: number;
+      let k: number;
+      if (i < 20) {
+        f = (b & c) | ((~b) & d);
+        k = 0x5a827999;
+      } else if (i < 40) {
+        f = b ^ c ^ d;
+        k = 0x6ed9eba1;
+      } else if (i < 60) {
+        f = (b & c) | (b & d) | (c & d);
+        k = 0x8f1bbcdc;
+      } else {
+        f = b ^ c ^ d;
+        k = 0xca62c1d6;
+      }
+
+      const temp = (((a << 5) | (a >>> 27)) + f + e + k + w[i]) >>> 0;
+      e = d;
+      d = c;
+      c = ((b << 30) | (b >>> 2)) >>> 0;
+      b = a;
+      a = temp;
+    }
+
+    h0 = (h0 + a) >>> 0;
+    h1 = (h1 + b) >>> 0;
+    h2 = (h2 + c) >>> 0;
+    h3 = (h3 + d) >>> 0;
+    h4 = (h4 + e) >>> 0;
+  }
+
+  const hex = (n: number) => n.toString(16).padStart(8, '0');
+  return hex(h0) + hex(h1) + hex(h2) + hex(h3) + hex(h4);
 }
 
 function solveChallenge(x: number, y: string): number | null {
@@ -19,11 +85,16 @@ function solveChallenge(x: number, y: string): number | null {
   return null;
 }
 
-export async function scrapeLivePlayCricketFixtures(teamId: MalpasTeamId = '2nd_xi'): Promise<MalpasFixture[]> {
+export async function scrapeLivePlayCricketFixtures(teamId?: MalpasTeamId): Promise<MalpasFixture[]> {
+  const baseFixtures = teamId 
+    ? MALPAS_FIXTURES.filter(f => f.teamId === teamId)
+    : MALPAS_FIXTURES;
+
   try {
-    const pcTeamId = TEAM_PLAY_CRICKET_IDS[teamId] || '355847';
+    const targetTeamId = teamId || '2nd_xi';
+    const pcTeamId = TEAM_PLAY_CRICKET_IDS[targetTeamId] || '355847';
     const baseUrl = 'https://malpas.play-cricket.com';
-    const targetUrl = `${baseUrl}/Matches?team_id=${pcTeamId}`;
+    const targetUrl = `${baseUrl}/Teams/${pcTeamId}`;
 
     const res1 = await fetch(targetUrl, {
       headers: {
@@ -32,81 +103,54 @@ export async function scrapeLivePlayCricketFixtures(teamId: MalpasTeamId = '2nd_
       next: { revalidate: 300 }, // Cache 5 min
     });
 
-    const rawCookies1 = res1.headers.getSetCookie ? res1.headers.getSetCookie() : [res1.headers.get('set-cookie')];
-    const validCookies1 = rawCookies1.filter((c): c is string => typeof c === 'string' && c.length > 0);
-    let cookies = validCookies1.map(c => c.split(';')[0]).join('; ');
-
-    const html1 = await res1.text();
-    const xMatch = html1.match(/var x\s*=\s*(\d+);/);
-    const yMatch = html1.match(/var y\s*=\s*["']([^"']+)["'];/);
-    const hintMatch = html1.match(/name="hint"\s+value="([^"]+)"/);
-
-    let html = html1;
-
-    if (xMatch && yMatch && hintMatch) {
-      const x = parseInt(xMatch[1], 10);
-      const y = yMatch[1];
-      const hint = hintMatch[1];
-      const answer = solveChallenge(x, y);
-
-      const solvedUrl = `${baseUrl}/Teams?hint=${encodeURIComponent(hint)}&answer=${answer}`;
-
-      const res2 = await fetch(solvedUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          ...(cookies ? { Cookie: cookies } : {}),
-        },
-      });
-
-      const rawCookies2 = res2.headers.getSetCookie ? res2.headers.getSetCookie() : [res2.headers.get('set-cookie')];
-      const validCookies2 = rawCookies2.filter((c): c is string => typeof c === 'string' && c.length > 0);
-      if (validCookies2.length > 0) {
-        cookies = validCookies2.map(c => c.split(';')[0]).join('; ');
-      }
-
-      const res3 = await fetch(targetUrl, {
-        headers: {
-          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-          Cookie: cookies,
-        },
-      });
-
-      html = await res3.text();
+    if (!res1.ok) {
+      return baseFixtures;
     }
 
-    // Parse matches from HTML
-    const matches = [...html.matchAll(/<p class='time[^']*'>([^<]*)<\/p>[\s\S]*?<p class='txt1'>([\s\S]*?)<\/p>[\s\S]*?<p class='txt1'>([\s\S]*?)<\/p>/gi)];
+    const html = await res1.text();
 
-    if (matches.length === 0) {
-      return MALPAS_FIXTURES.filter(f => f.teamId === teamId);
+    // Parse matches from HTML card elements
+    const matchBlocks = [...html.matchAll(/href=["']\/match_details\?id=(\d+)["'][\s\S]*?<p class='time[^']*'>([^<]*)<\/p>[\s\S]*?<p class='txt1'>([\s\S]*?)<\/p>[\s\S]*?<p class='txt1'>([\s\S]*?)<\/p>/gi)];
+
+    if (matchBlocks.length === 0) {
+      return baseFixtures;
     }
 
-    const scrapedFixtures: MalpasFixture[] = matches.map((m, idx) => {
-      const time = m[1].trim() || '13:00';
-      const team1 = m[2].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
-      const team2 = m[3].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    const liveScraped: MalpasFixture[] = matchBlocks.map((m, idx) => {
+      const matchId = m[1];
+      const time = (m[2] && m[2].trim()) || '13:00';
+      const team1 = m[3] ? m[3].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : 'Malpas CC';
+      const team2 = m[4] ? m[4].replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim() : 'Opponent';
 
       const isMalpasTeam1 = team1.includes('Malpas');
       const opponent = isMalpasTeam1 ? team2 : team1;
-      const venue = isMalpasTeam1 ? 'Home' : 'Away';
+      const venue: 'Home' | 'Away' = isMalpasTeam1 ? 'Home' : 'Away';
 
       return {
-        id: `pc_live_${teamId}_${idx + 1}`,
-        teamId,
+        id: `pc_live_${matchId}_${idx}`,
+        teamId: targetTeamId,
         opponent,
-        date: new Date().toISOString().split('T')[0],
+        date: '2026-08-08',
         time,
         venue,
         ground: venue === 'Home' ? 'The Recreation Ground, Wrexham Road, Malpas' : opponent,
-        competition: teamId === '2nd_xi' ? 'Cheshire League Reserve Div 4' : 'Cheshire Cricket League',
+        competition: targetTeamId === '2nd_xi' ? 'Cheshire League Reserve Div 4' : 'Cheshire Cricket League Div 4',
         status: 'upcoming',
       };
     });
 
-    return scrapedFixtures;
+    // Merge scraped live fixtures into baseFixtures avoiding duplicates
+    const combined = [...liveScraped];
+    for (const bf of baseFixtures) {
+      if (!combined.some(c => c.opponent.toLowerCase().includes(bf.opponent.toLowerCase().split(' ')[0]) && c.date === bf.date)) {
+        combined.push(bf);
+      }
+    }
+
+    return combined.sort((a, b) => b.date.localeCompare(a.date));
   } catch (e) {
     console.warn(`Play-Cricket scraper fallback for team ${teamId}`, e);
-    return MALPAS_FIXTURES.filter(f => f.teamId === teamId);
+    return baseFixtures;
   }
 }
 

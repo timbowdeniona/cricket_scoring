@@ -54,14 +54,19 @@ export function WicketModal({
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4" role="dialog" aria-modal="true" aria-labelledby="wicket-modal-title">
       <div className="glass-panel w-full max-w-lg rounded-2xl p-5 border border-rose-500/40 shadow-2xl animate-in fade-in zoom-in-95">
         <div className="flex items-center justify-between border-b border-rose-900/40 pb-3 mb-4">
-          <h3 className="text-lg font-bold text-white flex items-center gap-2">
+          <h3 id="wicket-modal-title" className="text-lg font-bold text-white flex items-center gap-2">
             <AlertTriangle className="w-6 h-6 text-rose-500" />
             Record Wicket / Dismissal
           </h3>
-          <button onClick={onClose} className="p-1 rounded-lg text-gray-400 hover:text-white hover:bg-gray-800">
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="Close modal"
+            className="min-h-[48px] min-w-[48px] p-2 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-gray-800 transition-colors focus:outline-none focus:ring-2 focus:ring-rose-500"
+          >
             <X className="w-6 h-6" />
           </button>
         </div>
@@ -74,7 +79,8 @@ export function WicketModal({
               <button
                 type="button"
                 onClick={() => setDismissedId(striker?.id || '')}
-                className={`p-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                aria-label={`Dismiss ${striker?.name || 'Striker'} (Striker)`}
+                className={`min-h-[48px] p-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center justify-center ${
                   dismissedId === striker?.id
                     ? 'bg-rose-600 text-white border-rose-400 shadow'
                     : 'bg-emerald-950/40 text-gray-300 border-emerald-900/40'
@@ -85,7 +91,8 @@ export function WicketModal({
               <button
                 type="button"
                 onClick={() => setDismissedId(nonStriker?.id || '')}
-                className={`p-2.5 rounded-xl border text-sm font-semibold transition-all ${
+                aria-label={`Dismiss ${nonStriker?.name || 'Non-Striker'} (Non-Striker)`}
+                className={`min-h-[48px] p-2.5 rounded-xl border text-sm font-semibold transition-all flex items-center justify-center ${
                   dismissedId === nonStriker?.id
                     ? 'bg-rose-600 text-white border-rose-400 shadow'
                     : 'bg-emerald-950/40 text-gray-300 border-emerald-900/40'
@@ -105,7 +112,8 @@ export function WicketModal({
                   key={wt.type}
                   type="button"
                   onClick={() => setSelectedType(wt.type)}
-                  className={`p-2.5 rounded-xl text-xs font-bold uppercase border transition-all ${
+                  aria-label={`Dismissal type: ${wt.label}`}
+                  className={`min-h-[48px] p-2 rounded-xl text-xs font-bold uppercase border transition-all flex items-center justify-center ${
                     selectedType === wt.type
                       ? 'bg-rose-600 text-white border-rose-300 shadow-md scale-105'
                       : 'bg-gray-800/80 text-gray-300 border-gray-700 hover:bg-gray-700'
@@ -124,7 +132,8 @@ export function WicketModal({
               <select
                 value={selectedFielderId}
                 onChange={e => setSelectedFielderId(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white text-sm font-semibold focus:outline-none focus:border-rose-500"
+                aria-label="Select Fielder or Wicket Keeper"
+                className="w-full min-h-[48px] bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white text-sm font-semibold focus:outline-none focus:border-rose-500"
               >
                 <option value="">Select Fielder (or C&B / Keeper)</option>
                 {fieldingPlayers.map(fp => (
@@ -143,7 +152,8 @@ export function WicketModal({
               <select
                 value={nextBatterId}
                 onChange={e => setNextBatterId(e.target.value)}
-                className="w-full bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white text-sm font-semibold focus:outline-none focus:border-emerald-500"
+                aria-label="Select Next Batsman In"
+                className="w-full min-h-[48px] bg-gray-900 border border-gray-700 rounded-xl p-2.5 text-white text-sm font-semibold focus:outline-none focus:border-emerald-500"
               >
                 {availableBatters.map(b => (
                   <option key={b.id} value={b.id}>
@@ -157,14 +167,18 @@ export function WicketModal({
 
         <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-rose-900/40">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium border border-gray-600"
+            aria-label="Cancel wicket recording"
+            className="min-h-[48px] px-4 py-2.5 rounded-xl bg-gray-800 hover:bg-gray-700 text-gray-300 text-sm font-medium border border-gray-600 focus:outline-none focus:ring-2 focus:ring-gray-400"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSubmit}
-            className="px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg flex items-center gap-2"
+            aria-label="Confirm dismissal"
+            className="min-h-[48px] px-6 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm shadow-lg flex items-center justify-center gap-2 focus:outline-none focus:ring-2 focus:ring-rose-400"
           >
             <Check className="w-4 h-4" />
             Confirm Dismissal
